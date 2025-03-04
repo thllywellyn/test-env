@@ -17,8 +17,10 @@ const StudentDocument = () => {
       try {
         const response = await fetch(`https://test-env-0xqt.onrender.com/api/student/StudentDocument/${Data}`, {
           method: "GET",
+          credentials: 'include',
           headers: {
             "Content-Type": "application/json",
+            "Authorization": `Bearer ${localStorage.getItem('accessToken')}`,
           },
         });
 
@@ -29,12 +31,13 @@ const StudentDocument = () => {
         const user = await response.json();
         setdata(user.data);
       } catch (error) {
+        console.error("Fetch error:", error);
         setError(error.message);
       }
     };
 
     getData();
-  }, []);
+  }, [Data]);
 
   const [formData, setFormData] = useState({
     Phone: data.Phone || "",
@@ -76,11 +79,14 @@ const StudentDocument = () => {
     try {
       const response = await fetch(`https://test-env-0xqt.onrender.com/api/student/verification/${Data}`, {
         method: "POST",
+        credentials: 'include',
+        headers: {
+          "Authorization": `Bearer ${localStorage.getItem('accessToken')}`,
+        },
         body: formDataObj,
       });
 
       const responseData = await response.json();
-      console.log("response", responseData);
 
       setLoader(false);
       if (!response.ok) {
@@ -91,6 +97,8 @@ const StudentDocument = () => {
       }
     } catch (e) {
       console.error("Error:", e);
+      setLoader(false);
+      setError("Failed to submit form");
     }
   };
 
