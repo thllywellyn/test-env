@@ -1,12 +1,17 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-// https://vitejs.dev/config/
 export default defineConfig({
-  server:{
-    proxy:{
-      '/api': 'https://test-env-0xqt.onrender.com'
+  server: {
+    port: 3000, // Change as needed
+    proxy: {
+      '/api': {
+        target: 'https://test-env-0xqt.onrender.com',
+        changeOrigin: true,
+        secure: false,
+        rewrite: (path) => path.replace(/^\/api/, '') // Adjust if needed
+      }
     }
   },
-  plugins: [react()],
+  plugins: [react()]
 })
