@@ -39,11 +39,11 @@ const Signup = () => {
       newErrors.email = 'Invalid email format';
     }
 
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    //const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
     
-    if (!passwordRegex.test(Password)) {
-      newErrors.password = 'Password must be at least 8 characters long and include an uppercase letter, a lowercase letter, a number, and a special character.';
-    }
+   // if (!passwordRegex.test(Password)) {
+    //  newErrors.password = 'Password must be at least 8 characters long and include an uppercase letter, a lowercase letter, a number, and a special character.';
+    //}
 
     if (Object.keys(newErrors).length > 0) {
       // Update the errors state and prevent form submission
