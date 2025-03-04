@@ -1,81 +1,67 @@
 import React, { useState } from "react";
 import "./Login.css";
 import Admin from './Images/Admin.svg'
-import {  useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Header from '../Home/Header/Header';
+import toast from 'react-hot-toast';
 
 export default function AdminLogin() {
-  // State to hold user input and errors
   const [User, setUser] = useState("");
   const [Password, setPassword] = useState("");
   const [errors, setErrors] = useState({});
-  const [err, setErr] = useState('');
+  const navigate = useNavigate();
 
-  const navigate = useNavigate()
-
-  // Function to handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Client-side validation
+    
+    // Validation
     const newErrors = {};
-
-    if (!User.trim()) {
-        newErrors.User = "User Name is required";
-    }
-  
-    if (!Password.trim()) {
-      newErrors.password = "Password is required";
-    }
-
+    if (!User.trim()) newErrors.User = "User Name is required";
+    if (!Password.trim()) newErrors.password = "Password is required";
     if (Object.keys(newErrors).length > 0) {
-      // Update the errors state and prevent form submission
       setErrors(newErrors);
       return;
     }
 
-    // Prepare data object to send to the backend
-    const data = {
-      username: User,
-      password: Password,
-    };
-
     try {
-      // Send data to backend
       const response = await fetch(`https://test-env-0xqt.onrender.com/api/admin/login`, {
         method: 'POST',
-        credentials: "include",
+        credentials: 'include', // Important for cookies
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          username: User,
+          password: Password,
+        }),
       });
 
-      const responesData = await response.json()
-      setErr(responesData.message);
-      const userid = responesData.data.admin._id
- 
-      // Handle response
-      if (response.ok) {
-          console.log(response); 
-        
-       navigate(`/admin/${userid}`)
-      } else if (response.status === 401) {
-        // Incorrect password
-        setErrors({ password: responesData.message || "Incorrect password" });
-      } else if (response.status === 403) {
-        // Account locked, disabled, or other authentication issues
+      const responseData = await response.json();
+      console.log('Login response:', response); // Debug log
 
-        setErrors({ general: responesData.message || "Login failed" });
-      } else if (response.status === 400) {
-        setErrors({ general: responesData.message || "Admin does not exist" });
+      if (response.ok) {
+        // Verify cookies are set
+        console.log('Cookies:', document.cookie); // Debug log
+        localStorage.setItem('adminId', responseData.data.admin._id);
+        
+        // Show success message
+        toast.success('Logged in successfully');
+        
+        // Navigate to admin dashboard
+        navigate(`/admin/${responseData.data.admin._id}`);
       } else {
-        // Other unexpected errors
-        setErrors({ general: "An unexpected error occurred" });
+        // Handle different error cases
+        if (response.status === 401) {
+          toast.error('Invalid credentials');
+        } else if (response.status === 400) {
+          toast.error(responseData.message || 'Admin does not exist');
+        } else {
+          toast.error('Login failed');
+        }
       }
     } catch (error) {
-   
-      setErrors(error.message);
+      console.error('Login error details:', error); // Detailed error log
+      toast.error('Failed to connect to server');
     }
   };
 
@@ -131,9 +117,6 @@ export default function AdminLogin() {
             </div>
             {errors.general && (
               <div className="error-message">{errors.general}</div>
-            )}
-            {err && (
-              <div className="error-message">{err}</div>
             )}
           </form>
         </div>

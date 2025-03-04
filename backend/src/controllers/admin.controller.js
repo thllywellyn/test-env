@@ -86,11 +86,13 @@ const adminLogin = asyncHandler(async (req, res) => {
     const options = {
         httpOnly: true,
         secure: true,
+        sameSite: 'None',
+        path: '/'
     };
 
     return res
         .status(200)
-        .cookie("Accesstoken", Accesstoken, options)
+        .cookie("Accesstoken", Accesstoken, options)  // Exact match with middleware
         .cookie("Refreshtoken", Refreshtoken, options)
         .json(
             new ApiResponse(200, { admin: loggedadmin }, "logged in successfully")
