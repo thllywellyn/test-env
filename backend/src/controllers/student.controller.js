@@ -148,20 +148,17 @@ const mailVerified = asyncHandler(async(req,res)=>{
 
 const login = asyncHandler(async(req,res) => {
     try {
-        // Log the incoming request body
-        console.log("Login attempt with body:", req.body);
-        
+        // Get credentials from request body
         const {Email, Password} = req.body;
-
-        console.log("Extracted credentials:", { Email, Password: "REDACTED" });
+        console.log("Login attempt for:", Email);
 
         if(!Email || !Password) {
             throw new ApiError(400, "Email and password are required");
         }
 
+        // Find student and explicitly select Password field
         const StdLogin = await student.findOne({ Email }).select("+Password");
-        console.log("Found student:", StdLogin ? "Yes" : "No");
-
+        
         if(!StdLogin){
             throw new ApiError(404, "Student does not exist");
         }
@@ -170,28 +167,29 @@ const login = asyncHandler(async(req,res) => {
             throw new ApiError(401, "Email is not verified");
         }
 
-        console.log("Checking password...");
         const StdPassCheck = await StdLogin.isPasswordCorrect(Password);
-        console.log("Password check result:", StdPassCheck);
-
+        
         if(!StdPassCheck){
             throw new ApiError(403, "Invalid credentials");
         }
 
-        console.log("Generating tokens...");
+        // Generate tokens
         const {Accesstoken, Refreshtoken} = await generateAccessAndRefreshTokens(StdLogin._id);
-        console.log("Tokens generated:", { Accesstoken: "EXISTS", Refreshtoken: "EXISTS" });
 
+        // Get user without sensitive fields
         const loggedInStd = await student.findById(StdLogin._id).select("-Password -Refreshtoken");
 
+        // Cookie options
         const options = {
             httpOnly: true,
             secure: true,
             sameSite: 'none',
             path: '/',
-            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+            domain: process.env.NODE_ENV === "development" ? "localhost" : ".onrender.com", // Adjust domain based on environment
+            maxAge: 24 * 60 * 60 * 1000 // 24 hours
         }
 
+        // Set cookies and send response
         return res
         .status(200)
         .cookie("Accesstoken", Accesstoken, options)
@@ -201,10 +199,8 @@ const login = asyncHandler(async(req,res) => {
                 200,
                 {
                     user: loggedInStd,
-                    tokens: {
-                        access: Accesstoken,
-                        refresh: Refreshtoken
-                    }
+                    accessToken: Accesstoken, // Include token in response body
+                    refreshToken: Refreshtoken
                 },
                 "Logged in successfully"
             )

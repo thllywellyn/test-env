@@ -6,19 +6,18 @@ import Razorpay from "razorpay"
 const app = express();
 
 const corsOptions = {
-    origin: ['https://test-env-kappa.vercel.app', 'http://localhost:3000', 'http://localhost:5173'],
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    origin: true, // This will reflect the request origin
     credentials: true,
-    allowedHeaders: ['Content-Type', 'Authorization', 'Origin', 'Accept', 'X-Requested-With'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Origin', 'Accept'],
     exposedHeaders: ['Set-Cookie'],
-    optionsSuccessStatus: 200,
-    preflightContinue: true,
-    maxAge: 86400 // 24 hours
+    maxAge: 86400,
 };
+
+app.use(cors(corsOptions));
 
 // Enable pre-flight requests for all routes
 app.options('*', cors(corsOptions));
-app.use(cors(corsOptions));
 
 // Set additional headers for better CORS handling
 app.use((req, res, next) => {
@@ -34,8 +33,7 @@ app.set('trust proxy', 1); // trust first proxy for secure cookies
 app.use(express.json({limit: "16kb"}))
 app.use(express.urlencoded({extended: true, limit: "16kb"}))
 app.use(express.static("public"))
-app.use(cookieParser())
-
+app.use(cookieParser(process.env.COOKIE_SECRET))
 
 export const instance = new Razorpay({
     key_id: process.env.KEY_ID,
