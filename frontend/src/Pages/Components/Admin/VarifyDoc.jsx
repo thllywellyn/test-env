@@ -11,42 +11,54 @@ function VarifyDoc() {
         setValue(event.target.value);
     };
 
-    const Approval = async(id, type, approve, email)=>{
+    const Approval = async(id, type, approve, email) => {
         try {
           const data = {
-            Isapproved : approve,
-            remarks : value,
+            Isapproved: approve,
+            remarks: value,
             email: email,
           }
     
-            const response = await fetch(`https://test-env-0xqt.onrender.com/api/admin/${adminID}/approve/${type}/${id}`, {
+          const response = await fetch(`https://test-env-0xqt.onrender.com/api/admin/${adminID}/approve/${type}/${id}`, {
             method: 'POST',
+            credentials: 'include', // Add this line
             headers: {
               "Content-Type": "application/json",
             },
             body: JSON.stringify(data),
           });
+
+          if (!response.ok) {
+            throw new Error('Failed to approve document');
+          }
         
           navigator(`/admin/${adminID}`);
     
         } catch (error) {
           console.log(error.message);
         }
-      }
+    }
 
     useEffect(() => {
         const getData = async () => {
             try {
-                const docData = await fetch(`https://test-env-0xqt.onrender.com/api/admin/${adminID}/documents/${type}/${ID}`);
+                const docData = await fetch(
+                    `https://test-env-0xqt.onrender.com/api/admin/${adminID}/documents/${type}/${ID}`,
+                    {
+                        credentials: 'include' // Add this line
+                    }
+                );
+                if (!docData.ok) {
+                    throw new Error('Failed to fetch documents');
+                }
                 const response = await docData.json();
                 setData(response.data);
-                console.log(response.data);
             } catch (err) {
                 console.log(err.message);
             }
         };
         getData();
-    }, []);
+    }, [adminID, type, ID]);
 
     return (
         <>
