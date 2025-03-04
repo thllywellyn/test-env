@@ -15,29 +15,59 @@ const StudentDocument = () => {
   useEffect(() => {
     const getData = async () => {
       try {
+        const token = localStorage.getItem('accessToken');
+        if (!token) {
+          throw new Error("No access token found");
+        }
+
         const response = await fetch(`https://test-env-0xqt.onrender.com/api/student/StudentDocument/${Data}`, {
           method: "GET",
           credentials: 'include',
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${localStorage.getItem('accessToken')}`,
+            "Authorization": `Bearer ${token}`,
           },
         });
 
+        const contentType = response.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+          throw new Error("Server didn't return JSON");
+        }
+
         if (!response.ok) {
-          throw new Error("Failed to fetch data");
+          const errorData = await response.json();
+          throw new Error(errorData.message || "Failed to fetch data");
         }
 
         const user = await response.json();
+        if (!user.data) {
+          throw new Error("Invalid data format received");
+        }
+        
         setdata(user.data);
+        // Update formData with user data
+        setFormData(prev => ({
+          ...prev,
+          Phone: user.data.Phone || "",
+          Address: user.data.Address || "",
+          Highesteducation: user.data.Highesteducation || "",
+          SecondarySchool: user.data.SecondarySchool || "",
+          HigherSchool: user.data.HigherSchool || "",
+          SecondaryMarks: user.data.SecondaryMarks || "",
+          HigherMarks: user.data.HigherMarks || "",
+        }));
       } catch (error) {
         console.error("Fetch error:", error);
-        setError(error.message);
+        setError(error.message || "Failed to load user data");
+        // Redirect to login if token is invalid
+        if (error.message.includes("token")) {
+          navigate('/login');
+        }
       }
     };
 
     getData();
-  }, [Data]);
+  }, [Data, navigate]);
 
   const [formData, setFormData] = useState({
     Phone: data.Phone || "",
@@ -69,36 +99,46 @@ const StudentDocument = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoader(true);
-
-    const formDataObj = new FormData();
-
-    Object.keys(formData).forEach((key) => {
-      formDataObj.append(key, formData[key]);
-    });
+    setError("");
 
     try {
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        throw new Error("No access token found");
+      }
+
+      const formDataObj = new FormData();
+      Object.keys(formData).forEach((key) => {
+        if (formData[key] !== null && formData[key] !== undefined) {
+          formDataObj.append(key, formData[key]);
+        }
+      });
+
       const response = await fetch(`https://test-env-0xqt.onrender.com/api/student/verification/${Data}`, {
         method: "POST",
         credentials: 'include',
         headers: {
-          "Authorization": `Bearer ${localStorage.getItem('accessToken')}`,
+          "Authorization": `Bearer ${token}`,
         },
         body: formDataObj,
       });
 
-      const responseData = await response.json();
-
-      setLoader(false);
       if (!response.ok) {
-        setError(responseData.message);
-      } else {
-        console.log("Form submitted successfully!");
-        navigate("/pending");
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to submit form");
       }
-    } catch (e) {
-      console.error("Error:", e);
+
+      const responseData = await response.json();
+      console.log("Form submitted successfully!", responseData);
+      navigate("/pending");
+    } catch (error) {
+      console.error("Submit error:", error);
+      setError(error.message || "Failed to submit form");
+      if (error.message.includes("token")) {
+        navigate('/login');
+      }
+    } finally {
       setLoader(false);
-      setError("Failed to submit form");
     }
   };
 
