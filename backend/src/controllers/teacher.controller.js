@@ -7,13 +7,14 @@ import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { student } from "../models/student.model.js";
 import nodemailer from "nodemailer";
 
+
+
 const verifyEmail = async (Email, Firstname, createdTeacherId) => {
     try {
         const emailSender = nodemailer.createTransport({
-            host: 'smtp.gmail.com',
-            port: 587,
-            secure: false,
-            requireTLS: true,
+            host: process.env.SMTP_EMAIL_HOST,
+            port: process.env.SMTP_EMAIL_HOST_PORT,
+            secure: true,
             auth: {
                 user: process.env.SMTP_EMAIL,
                 pass: process.env.SMTP_PASS,

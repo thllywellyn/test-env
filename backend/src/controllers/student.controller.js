@@ -12,10 +12,9 @@ import { Sendmail } from "../utils/Nodemailer.js";
 const verifyEmail = async (Email, Firstname, createdStudent_id) => {
     try {
         const emailsender = nodemailer.createTransport({
-            host: 'smtp.gmail.com',
-            port: 587,
-            secure: false,
-            requireTLS: true,
+            host: process.env.SMTP_EMAIL_HOST,
+            port: process.env.SMTP_EMAIL_HOST_PORT,
+            secure: true,
             auth: {
                 user: process.env.SMTP_EMAIL,
                 pass: process.env.SMTP_PASS,
