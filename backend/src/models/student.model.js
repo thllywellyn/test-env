@@ -91,23 +91,30 @@ studentSchema.methods.isPasswordCorrect = async function (Password){
 }
 
 studentSchema.methods.generateAccessToken = function(){
-    return jwt.sign({
-        _id:this._id,
-        Email:this.Email,
-    },
-    process.env.ACCESS_TOKEN_SECRET,{
-        expiresIn:process.env.ACCESS_TOKEN_EXPIRY
-    })
+    return jwt.sign(
+        {
+            _id: this._id,
+            Email: this.Email,
+            Firstname: this.Firstname,
+            Lastname: this.Lastname
+        },
+        process.env.ACCESS_TOKEN_SECRET,
+        {
+            expiresIn: process.env.ACCESS_TOKEN_EXPIRY
+        }
+    )
 }
 
 studentSchema.methods.generateRefreshToken = function(){
-    return jwt.sign({
-        _id:this._id,
-        Email:this.Email,
-    },
-    process.env.REFRESH_TOKEN_SECRET,{
-        expiresIn:process.env.REFRESH_TOKEN_EXPIRY
-    })
+    return jwt.sign(
+        {
+            _id: this._id,
+        },
+        process.env.REFRESH_TOKEN_SECRET,
+        {
+            expiresIn: process.env.REFRESH_TOKEN_EXPIRY
+        }
+    )
 }
 
 studentSchema.methods.generateResetToken =async function(){

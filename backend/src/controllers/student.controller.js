@@ -148,38 +148,48 @@ const mailVerified = asyncHandler(async(req,res)=>{
 
 const login = asyncHandler(async(req,res) => {
     try {
-        const {Email, Password} = req.body;  // Changed to directly get from body
+        // Log the incoming request body
+        console.log("Login attempt with body:", req.body);
+        
+        const {Email, Password} = req.body;
 
-        if(!Email || !Password || [Email, Password].some((field) => field?.trim() === "")) {
+        console.log("Extracted credentials:", { Email, Password: "REDACTED" });
+
+        if(!Email || !Password) {
             throw new ApiError(400, "Email and password are required");
         }
 
-        const StdLogin = await student.findOne({ Email })
+        const StdLogin = await student.findOne({ Email }).select("+Password");
+        console.log("Found student:", StdLogin ? "Yes" : "No");
 
         if(!StdLogin){
-            throw new ApiError(404, "Student does not exist")
+            throw new ApiError(404, "Student does not exist");
         }
 
         if(!StdLogin.Isverified){
             throw new ApiError(401, "Email is not verified");
         }
 
-        const StdPassCheck = await StdLogin.isPasswordCorrect(Password)
+        console.log("Checking password...");
+        const StdPassCheck = await StdLogin.isPasswordCorrect(Password);
+        console.log("Password check result:", StdPassCheck);
 
         if(!StdPassCheck){
-            throw new ApiError(403, "Invalid credentials")
+            throw new ApiError(403, "Invalid credentials");
         }
 
-        const {Accesstoken, Refreshtoken} = await generateAccessAndRefreshTokens(StdLogin._id)
+        console.log("Generating tokens...");
+        const {Accesstoken, Refreshtoken} = await generateAccessAndRefreshTokens(StdLogin._id);
+        console.log("Tokens generated:", { Accesstoken: "EXISTS", Refreshtoken: "EXISTS" });
 
-        const loggedInStd = await student.findById(StdLogin._id).select("-Password -Refreshtoken")
+        const loggedInStd = await student.findById(StdLogin._id).select("-Password -Refreshtoken");
 
         const options = {
             httpOnly: true,
             secure: true,
             sameSite: 'none',
-            domain: process.env.NODE_ENV === "development" ? "localhost" : ".onrender.com",
-            expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+            path: '/',
+            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
         }
 
         return res
@@ -191,14 +201,17 @@ const login = asyncHandler(async(req,res) => {
                 200,
                 {
                     user: loggedInStd,
-                    Accesstoken,
-                    Refreshtoken
+                    tokens: {
+                        access: Accesstoken,
+                        refresh: Refreshtoken
+                    }
                 },
                 "Logged in successfully"
             )
         )
     } catch (error) {
-        throw new ApiError(500, error?.message || "Internal server error during login")
+        console.error("Login error:", error);
+        throw new ApiError(500, error?.message || "Internal server error during login");
     }
 })
 
