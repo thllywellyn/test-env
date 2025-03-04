@@ -13,7 +13,7 @@ function StudentCourses() {
   useEffect(() => {
       const getData = async () => {
         try {
-          const response = await fetch(`/api/course/student/${ID}/enrolled`, {
+          const response = await fetch(`https://test-env-0xqt.onrender.com/api/course/student/${ID}/enrolled`, {
             method: 'GET',
             headers: {
               'Content-Type': 'application/json',
@@ -37,7 +37,7 @@ function StudentCourses() {
 
   const openpopup = async(sub)=>{ 
     setsubDetails(sub);
-    await axios.get(`/api/course/${sub.coursename}`)
+    await axios.get(`https://test-env-0xqt.onrender.com/api/course/${sub.coursename}`)
       .then(res => {setPopup(true);
       setsubD(res.data.data)})
   }

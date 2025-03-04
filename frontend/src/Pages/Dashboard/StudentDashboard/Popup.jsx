@@ -23,7 +23,7 @@ function Popup({onClose, subject, allSubject}) {
 
   useEffect(()=>{
     const getData = async()=>{
-      const data = await fetch('/api/teacher/teacherdocuments',{
+      const data = await fetch('https://test-env-0xqt.onrender.com/api/teacher/teacherdocuments',{
         method: 'POST',
         credentials: "include",
         headers: {

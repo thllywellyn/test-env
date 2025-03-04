@@ -232,7 +232,7 @@ function Popup({ onClose, subject }) {
     console.log(data);
 
     // Call API
-    const response = await fetch(`/api/course/${subject}/create/${ID}`, {
+    const response = await fetch(`https://test-env-0xqt.onrender.com/api/course/${subject}/create/${ID}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -33,7 +33,7 @@ const Forgetpassword = () => {
     }
 
     try {
-      const response = await axios.post(`/api/${userType}/forgetpassword`, { Email: data.email});
+      const response = await axios.post(`https://test-env-0xqt.onrender.com/api/${userType}/forgetpassword`, { Email: data.email});
       console.log(response.data);
       toast.success('Email sent successfully');
     } catch (error) {

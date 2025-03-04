@@ -30,7 +30,7 @@ function DashboardTeacher() {
   useEffect(() => {
     const getData = async () => {
       try {
-        const response = await fetch(`/api/Teacher/TeacherDocument/${ID}`, {
+        const response = await fetch(`https://test-env-0xqt.onrender.com/api/Teacher/TeacherDocument/${ID}`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -53,7 +53,7 @@ function DashboardTeacher() {
 
   useEffect(()=>{
     const getData = async()=>{
-      const Data = await fetch('/api/teacher/teacherdocuments',{
+      const Data = await fetch('https://test-env-0xqt.onrender.com/api/teacher/teacherdocuments',{
         method: 'POST',
         credentials: "include",
         headers: {
@@ -72,7 +72,7 @@ function DashboardTeacher() {
   useEffect(() => {
     const getAmount = async () => {
       try {
-        const response = await fetch(`/api/payment/teacher/${ID}/balance`, {
+        const response = await fetch(`https://test-env-0xqt.onrender.com/api/payment/teacher/${ID}/balance`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -97,7 +97,7 @@ function DashboardTeacher() {
   useEffect(() => {
     const getCourses = async () => {
       try {
-        const response = await fetch(`/api/course/Teacher/${ID}/enrolled`, {
+        const response = await fetch(`https://test-env-0xqt.onrender.com/api/course/Teacher/${ID}/enrolled`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",

@@ -45,7 +45,7 @@ const ResetPassword = () => {
       return;
     }
     
-    const response= axios.post(`/api/student/forgetpassword/${token}`,{password:data.password,confirmPassword:data.confirmPassword})
+    const response = axios.post(`https://test-env-0xqt.onrender.com/api/student/forgetpassword/${token}`,{password:data.password,confirmPassword:data.confirmPassword})
      toast.promise(response,{
         loading:"wait for processing",
         success:(response)=> response?.data?.message,

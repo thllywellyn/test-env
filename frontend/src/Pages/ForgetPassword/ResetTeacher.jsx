@@ -44,7 +44,7 @@ const ResetTeacher = () => {
     }
     
     try {
-      const response = axios.post(`/api/teacher/forgetpassword/${token}`, {
+      const response = axios.post(`https://test-env-0xqt.onrender.com/api/teacher/forgetpassword/${token}`, {
         password: data.password,
         confirmPassword: data.confirmPassword
       });

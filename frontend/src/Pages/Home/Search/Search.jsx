@@ -23,7 +23,7 @@ function search() {
     
     let SearchTeacher = async()=>{
         let Subject = data.toLowerCase();
-        let Data = await fetch(`/api/course/${Subject}`)
+        let Data = await fetch(`https://test-env-0xqt.onrender.com/api/course/${Subject}`)
         let response = await Data.json();
         if(response.statusCode == 200){
         setCourse(response.data)
@@ -39,7 +39,7 @@ function search() {
     const openTeacherDec = async(id,fname,lname,sub)=>{
         setTname({fname,lname,sub});
 
-        const data = await fetch('/api/teacher/teacherdocuments',{
+        const data = await fetch('https://test-env-0xqt.onrender.com//teacher/teacherdocuments',{
             method: 'POST',
             credentials: "include",
             headers: {
