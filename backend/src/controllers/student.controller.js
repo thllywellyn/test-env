@@ -21,14 +21,14 @@ const verifyEmail = async (Email, Firstname, createdStudent_id) => {
             }
         });
         // const mailOptions = {
-        //     from: "elearningsnu@gmail.com",
+        //     from: process.env.SMTP_EMAIL,
         //     to: Email,
         //     subject: "Verify your E-mail",
         //     html: `<p> Hi ${Firstname}, Please click here to <a href="http://localhost:4400/api/student/verify?id=${createdStudent_id}">verify</a> your E-mail. </p>`
         // };
 
         const mailOptions = {
-            from: "elearningsnu@gmail.com",
+            from: process.env.SMTP_EMAIL,
             to: Email,
             subject: "Verify your E-mail",
             html: `

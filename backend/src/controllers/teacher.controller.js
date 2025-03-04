@@ -21,7 +21,7 @@ const verifyEmail = async (Email, Firstname, createdTeacherId) => {
             }
         });
         const mailOptions = {
-            from: "kadyanparag@gmail.com",
+            from: process.env.SMTP_EMAIL,
             to: Email,
             subject: "Verify your E-mail",
             html: `<div style="text-align: center;">
