@@ -9,9 +9,12 @@ const Footer = () => {
           <div className="w-full md:w-auto text-center md:text-left mb-4 md:mb-0">
             <p>© 2024 Your Platform Name. All rights reserved.</p>
           </div>
-          <div className="w-full md:w-auto text-center md:text-right">
+          <div className="w-full md:w-auto text-center md:text-right space-x-4">
             <Link to="/adminLogin" className="text-gray-400 hover:text-white text-sm">
               Admin Login
+            </Link>
+            <Link to="/adminSignup" className="text-gray-400 hover:text-white text-sm">
+              Admin Signup
             </Link>
           </div>
         </div>
