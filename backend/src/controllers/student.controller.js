@@ -250,7 +250,6 @@ const addStudentDetails = asyncHandler(async(req, res) => {
     try {
         const id = req.params.id;
         
-        // Validate user authorization
         if(!req.Student || req.Student._id != id) {
             return res.status(401).json({
                 success: false,
@@ -258,11 +257,7 @@ const addStudentDetails = asyncHandler(async(req, res) => {
             });
         }
 
-        // Log incoming request
-        console.log("Received form data:", req.body);
-        console.log("Received files:", req.files);
-
-        // Validate required fields
+        // Get form data from request body
         const {Phone, Address, Highesteducation, SecondarySchool, HigherSchool, SecondaryMarks, HigherMarks} = req.body;
         
         if (!Phone || !Address || !Highesteducation || !SecondarySchool || !HigherSchool || !SecondaryMarks || !HigherMarks) {
@@ -272,27 +267,7 @@ const addStudentDetails = asyncHandler(async(req, res) => {
             });
         }
 
-        // Validate file uploads
-        if (!req.files?.Aadhaar?.[0] || !req.files?.Secondary?.[0] || !req.files?.Higher?.[0]) {
-            return res.status(400).json({
-                success: false,
-                message: "All documents are required"
-            });
-        }
-
-        // Process files and create document
-        const Aadhaar = await uploadOnCloudinary(req.files.Aadhaar[0].path);
-        const Secondary = await uploadOnCloudinary(req.files.Secondary[0].path);
-        const Higher = await uploadOnCloudinary(req.files.Higher[0].path);
-
-        if (!Aadhaar?.url || !Secondary?.url || !Higher?.url) {
-            return res.status(400).json({
-                success: false,
-                message: "Error uploading documents"
-            });
-        }
-
-        // Create student documents
+        // Create student documents with form data only
         const studentdetails = await studentdocs.create({
             Phone,
             Address,
@@ -301,9 +276,10 @@ const addStudentDetails = asyncHandler(async(req, res) => {
             HigherSchool,
             SecondaryMarks,
             HigherMarks,
-            Aadhaar: Aadhaar.url,
-            Secondary: Secondary.url,
-            Higher: Higher.url,
+            // Set placeholder values for document fields
+            Aadhaar: "pending",
+            Secondary: "pending",
+            Higher: "pending",
         });
 
         // Update student record
@@ -325,11 +301,10 @@ const addStudentDetails = asyncHandler(async(req, res) => {
             });
         }
 
-        // Send success response
         return res.status(200).json({
             success: true,
             data: theStudent,
-            message: "Documents uploaded successfully"
+            message: "Details saved successfully"
         });
 
     } catch (error) {
@@ -429,7 +404,39 @@ const  resetPassword= asyncHandler(async (req, res) => {
     }
 });
 
+const verifyDocument = asyncHandler(async (req, res) => {
+    try {
+        const { files } = req;
+        if (!files || Object.keys(files).length === 0) {
+            throw new ApiError(400, "No files were uploaded");
+        }
 
+        const uploadPromises = Object.values(files).map(async (file) => {
+            try {
+                const result = await uploadOnCloudinary(file.path);
+                if (!result) {
+                    throw new ApiError(400, "File upload to cloudinary failed");
+                }
+                return result.url;
+            } catch (error) {
+                throw new ApiError(500, "Error uploading file: " + error.message);
+            }
+        });
+
+        const uploadedUrls = await Promise.all(uploadPromises);
+
+        return res.status(200).json({
+            success: true,
+            message: "Documents uploaded successfully",
+            data: uploadedUrls
+        });
+    } catch (error) {
+        return res.status(error.statusCode || 500).json({
+            success: false,
+            message: error.message || "Error uploading documents"
+        });
+    }
+});
 
 export{
     signup,
@@ -439,5 +446,6 @@ export{
       addStudentDetails,
        getStudent, 
        forgetPassword,
-       resetPassword
+       resetPassword,
+       verifyDocument
 }

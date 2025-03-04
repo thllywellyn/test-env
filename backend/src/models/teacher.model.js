@@ -154,89 +154,74 @@ teacherSchema.methods.generateResetToken =async function(){
 }
 
 
-const TeacherDetailsSchema = new mongoose.Schema({
-    Phone:{
-        type:Number,
+const teacherDetailsSchema = new mongoose.Schema({
+    Phone: {
+        type: Number,
         required: true,
-        trim:true,
-        unique:true,
+        trim: true,
+        unique: true,
     },
-
-    Address:{
-        type:String,
-        required:true,
+    Address: {
+        type: String,
+        required: true,
     },
-
-    Experience:{
-        type:Number,
-        required:true,
+    Experience: {
+        type: String,
+        required: true,
     },
-
-    SecondarySchool:{
-        type:String,
-        required:true,
+    SecondarySchool: {
+        type: String,
+        required: true,
     },
-
-    HigherSchool:{
-        type:String,
-        required:true,
+    HigherSchool: {
+        type: String,
+        required: true,
     },
-
-    UGcollege:{
-        type:String,
-        required:true,
+    UGcollege: {
+        type: String,
+        required: true,
     },
-
-    PGcollege:{
-        type:String,
-        required:true,
+    PGcollege: {
+        type: String,
+        required: true,
     },
-
-    SecondaryMarks:{
-        type:Number,
-        required:true,
+    SecondaryMarks: {
+        type: Number,
+        required: true,
     },
-
-    HigherMarks:{
-        type:Number,
-        required:true,
+    HigherMarks: {
+        type: Number,
+        required: true,
     },
-
-    UGmarks:{
-        type:Number,
-        required:true,
+    UGmarks: {
+        type: Number,
+        required: true,
     },
-
-    PGmarks:{
-        type:Number,
-        required:true,
+    PGmarks: {
+        type: Number,
+        required: true,
     },
-
-    Aadhaar:{
-        type:String,
-        required:true,
+    // Make document fields have default values
+    Aadhaar: {
+        type: String,
+        default: "pending"
     },
-
-    Secondary:{
-        type:String,
-        required:true,
+    Secondary: {
+        type: String,
+        default: "pending"
     },
-
-    Higher:{
-        type:String,
-        required:true,
+    Higher: {
+        type: String,
+        default: "pending"
     },
-
-    UG:{
-        type:String,
-        required:true,
+    UG: {
+        type: String,
+        default: "pending"
     },
-
-    PG:{
-        type:String,
-        required:true,
+    PG: {
+        type: String,
+        default: "pending"
     }
-
 }, {
     timestamps:true,
 })
@@ -244,6 +229,6 @@ const TeacherDetailsSchema = new mongoose.Schema({
 
 const Teacher = mongoose.model("teacher",teacherSchema)
 
-const Teacherdocs = mongoose.model("teacherdocs", TeacherDetailsSchema)
+const Teacherdocs = mongoose.model("teacherdocs", teacherDetailsSchema)
 
 export {Teacher, Teacherdocs}

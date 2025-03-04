@@ -1,9 +1,17 @@
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import Razorpay from "razorpay"
+import Razorpay from "razorpay";
+import fs from "fs";
+import path from "path";
 
 const app = express();
+
+// Create public directory if it doesn't exist
+const publicDir = path.join(process.cwd(), 'public');
+if (!fs.existsSync(publicDir)) {
+    fs.mkdirSync(publicDir, { recursive: true });
+}
 
 const corsOptions = {
     origin: true, // This will reflect the request origin

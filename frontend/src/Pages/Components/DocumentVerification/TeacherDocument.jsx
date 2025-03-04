@@ -72,31 +72,55 @@ const TeacherDocument = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoader(true);
-
-    const formDataObj = new FormData();
-
-    Object.keys(formData).forEach((key) => {
-      formDataObj.append(key, formData[key]);
-    });
+    setError("");
 
     try {
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        throw new Error("No access token found");
+      }
+
+      // Only send form fields, skip files for now
+      const payload = {
+        Phone: formData.Phone,
+        Address: formData.Address,
+        Experience: formData.Experience,
+        SecondarySchool: formData.SecondarySchool,
+        HigherSchool: formData.HigherSchool,
+        UGcollege: formData.UGcollege,
+        PGcollege: formData.PGcollege,
+        SecondaryMarks: formData.SecondaryMarks,
+        HigherMarks: formData.HigherMarks,
+        UGmarks: formData.UGmarks,
+        PGmarks: formData.PGmarks
+      };
+
       const response = await fetch(`https://test-env-0xqt.onrender.com/api/teacher/verification/${Data}`, {
         method: "POST",
-        body: formDataObj,
+        credentials: 'include',
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
       });
 
       const responseData = await response.json();
-      console.log("response", responseData);
 
-      setLoader(false);
       if (!response.ok) {
-        setError(responseData.message);
-      } else {
-        console.log("Form submitted successfully!");
-        navigate("/pending");
+        throw new Error(responseData.message || "Failed to submit form");
       }
-    } catch (e) {
-      console.error("Error:", e);
+
+      console.log("Form submitted successfully!", responseData);
+      navigate("/pending");
+    } catch (error) {
+      console.error("Submit error:", error);
+      setError(error.message || "Failed to submit form");
+      if (error.message.includes("token")) {
+        navigate('/login');
+      }
+    } finally {
+      setLoader(false);
     }
   };
 

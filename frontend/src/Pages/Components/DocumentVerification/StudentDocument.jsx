@@ -107,30 +107,26 @@ const StudentDocument = () => {
         throw new Error("No access token found");
       }
 
-      const formDataObj = new FormData();
-      
-      // Append all form fields
-      Object.keys(formData).forEach((key) => {
-        if (formData[key] !== null && formData[key] !== undefined && formData[key] !== "") {
-          formDataObj.append(key, formData[key]);
-        }
-      });
+      // Only send form fields, skip files for now
+      const payload = {
+        Phone: formData.Phone,
+        Address: formData.Address,
+        Highesteducation: formData.Highesteducation,
+        SecondarySchool: formData.SecondarySchool,
+        HigherSchool: formData.HigherSchool,
+        SecondaryMarks: formData.SecondaryMarks,
+        HigherMarks: formData.HigherMarks,
+      };
 
       const response = await fetch(`https://test-env-0xqt.onrender.com/api/student/verification/${Data}`, {
         method: "POST",
         credentials: 'include',
         headers: {
+          "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`
-          // Remove Content-Type header - browser will set it automatically with boundary for FormData
         },
-        body: formDataObj
+        body: JSON.stringify(payload)
       });
-
-      // First check if the response is JSON
-      const contentType = response.headers.get("content-type");
-      if (!contentType || !contentType.includes("application/json")) {
-        throw new Error("Server didn't return JSON");
-      }
 
       const responseData = await response.json();
 
@@ -150,6 +146,38 @@ const StudentDocument = () => {
       setLoader(false);
     }
   };
+
+  const handleUpload = async (e) => {
+    e.preventDefault();
+    try {
+        const formData = new FormData();
+        // Add files to formData
+        files.forEach((file) => {
+            formData.append('documents', file);
+        });
+
+        const response = await axios.post(
+            `${import.meta.env.VITE_BACKEND_URL}/api/student/verify-document`,
+            formData,
+            {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                },
+                withCredentials: true
+            }
+        );
+
+        if (response.data.success) {
+            toast.success('Documents uploaded successfully');
+            // Handle successful upload
+        } else {
+            toast.error(response.data.message || 'Upload failed');
+        }
+    } catch (error) {
+        console.error('Upload error:', error);
+        toast.error(error.response?.data?.message || 'Error uploading documents');
+    }
+};
 
   return (
     <>

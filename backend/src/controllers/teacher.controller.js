@@ -203,89 +203,76 @@ const getTeacher = asyncHandler(async(req,res) =>{
     .json(new ApiResponse(200, user, "Teacher is logged in"))
 })
 
-const addTeacherDetails = asyncHandler(async(req,res)=>{
+const addTeacherDetails = asyncHandler(async(req, res) => {
+    try {
+        const id = req.params.id;
+        
+        if(!req.teacher || req.teacher._id != id) {
+            return res.status(401).json({
+                success: false,
+                message: "Unauthorized access"
+            });
+        }
 
-    const id = req.params.id
-    if(req.teacher._id != id){
-        throw new ApiError(400, "unauthroized access")
+        const {Phone, Address, Experience, SecondarySchool, HigherSchool, UGcollege, PGcollege, 
+               SecondaryMarks, HigherMarks, UGmarks, PGmarks} = req.body;
+        
+        if (!Phone || !Address || !Experience || !SecondarySchool || 
+            !HigherSchool || !UGcollege || !PGcollege || !SecondaryMarks || 
+            !HigherMarks || !UGmarks || !PGmarks) {
+            return res.status(400).json({
+                success: false,
+                message: "All fields are required"
+            });
+        }
+
+        const teacherdetails = await Teacherdocs.create({
+            Phone,
+            Address,
+            Experience,
+            SecondarySchool,
+            HigherSchool,
+            UGcollege,
+            PGcollege,
+            SecondaryMarks,
+            HigherMarks,
+            UGmarks,
+            PGmarks
+            // Document fields will use default "pending" values
+        });
+
+        const theTeacher = await Teacher.findOneAndUpdate(
+            {_id: id},
+            {
+                $set: {
+                    Isapproved: "pending",
+                    Teacherdetails: teacherdetails._id
+                }
+            },
+            { new: true }
+        ).select("-Password -Refreshtoken");
+
+        if (!theTeacher) {
+            return res.status(404).json({
+                success: false,
+                message: "Teacher not found"
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            data: theTeacher,
+            message: "Details saved successfully"
+        });
+
+    } catch (error) {
+        console.error("Add teacher details error:", error);
+        return res.status(500).json({
+            success: false,
+            message: error.message || "Internal server error"
+        });
     }
-
-    const{Phone, Address, Experience, SecondarySchool, HigherSchool,UGcollege, PGcollege, SecondaryMarks, HigherMarks, UGmarks, PGmarks} = req.body
-
-    if([Phone, Address, Experience, SecondarySchool, HigherSchool,UGcollege, PGcollege, SecondaryMarks, HigherMarks, UGmarks, PGmarks].some((field)=> field?.trim() === "")){
-        throw new ApiError(400, "All fields are required")
-    }
-
-    const alreadyExist = await Teacherdocs.findOne({Phone})
-
-    if(alreadyExist){
-        throw new ApiError(400, "Phone number already exist")
-    }
-
-    const AadhaarLocalPath = req.files?.Aadhaar?.[0]?.path;
-
-    const SecondaryLocalPath = req.files?.Secondary?.[0]?.path;
-
-    const HigherLocalPath = req.files?.Higher?.[0]?.path
-
-    const UGLocalPath = req.files?.UG?.[0]?.path
-
-    const PGLocalPath = req.files?.PG?.[0]?.path
-
-
-    if(!AadhaarLocalPath){
-        throw new ApiError(400, "Aadhaar is required")
-    }
-    if(!SecondaryLocalPath){
-        throw new ApiError(400, "Secondary marksheet is required")
-    }
-    if(!HigherLocalPath){
-        throw new ApiError(400, "Higher marksheet is required")
-    }
-    if(!UGLocalPath){
-        throw new ApiError(400, "UG marksheet is required")
-    }
-    if(!PGLocalPath){
-        throw new ApiError(400, "PG marksheet is required")
-    }
-
-
-    const Aadhaar = await uploadOnCloudinary(AadhaarLocalPath)
-    const Secondary = await uploadOnCloudinary(SecondaryLocalPath)
-    const Higher = await uploadOnCloudinary(HigherLocalPath)
-    const UG = await uploadOnCloudinary(UGLocalPath)
-    const PG = await uploadOnCloudinary(PGLocalPath)
-
-    const teacherdetails = await Teacherdocs.create({
-        Phone,
-        Address,
-        Experience,
-        SecondarySchool,
-        HigherSchool,
-        UGcollege,
-        PGcollege,
-        SecondaryMarks,
-        HigherMarks,
-        UGmarks,
-        PGmarks,
-        Aadhaar: Aadhaar.url,
-        Secondary: Secondary.url,
-        Higher: Higher.url,
-        UG:UG.url,
-        PG:PG.url,
-    })
-
-    const theTeacher = await Teacher.findOneAndUpdate({_id: id}, {$set: {Isapproved:"pending", Teacherdetails: teacherdetails._id}},  { new: true }).select("-Password -Refreshtoken")
-    
-    if(!theTeacher){
-        throw new ApiError(400,"faild to approve or reject || student not found")
-    }
-
-    return res
-    .status(200)
-    .json(new ApiResponse(200, {teacher:theTeacher}, "documents uploaded successfully"))
-
-})
+});
 
 const teacherdocuments = asyncHandler(async(req, res)=>{
     const teacherID = req.body.teacherID;
