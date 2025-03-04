@@ -40,15 +40,14 @@ export default function AdminLogin() {
       console.log('Login response:', response); // Debug log
 
       if (response.ok) {
-        // Verify cookies are set
-        console.log('Cookies:', document.cookie); // Debug log
-        localStorage.setItem('adminId', responseData.data.admin._id);
+        // Store the admin ID properly
+        const adminId = responseData.data.admin._id;
+        localStorage.setItem('adminId', adminId);
         
-        // Show success message
         toast.success('Logged in successfully');
         
-        // Navigate to admin dashboard
-        navigate(`/admin/${responseData.data.admin._id}`);
+        // Use the correct parameter name 'id' instead of 'data'
+        navigate(`/admin/${adminId}`);
       } else {
         // Handle different error cases
         if (response.status === 401) {

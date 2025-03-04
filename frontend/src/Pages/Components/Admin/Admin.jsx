@@ -6,7 +6,7 @@ import Course from "./Course";
 import axios from "axios";
 
 const Admin = () => {
-  const { data } = useParams();
+  const { id } = useParams();
   const navigator = useNavigate();
 
 
@@ -66,16 +66,17 @@ const Admin = () => {
     }
   }
 
-  const docDetails = async (type, ID) =>{
-    navigator(`/VarifyDoc/${type}/${adminID}/${ID}`);
+  const docDetails = async (type, docId) =>{
+    navigator(`/VarifyDoc/${type}/${id}/${docId}`);
   }
 
 
   useEffect(() => {
     const getData = async () => {
       try {
-        const response = await fetch(`https://test-env-0xqt.onrender.com/api/admin/${data}/approve`, {
+        const response = await fetch(`https://test-env-0xqt.onrender.com/api/admin/${id}/approve`, {
           method: "POST",
+          credentials: 'include',
           headers: {
             "Content-Type": "application/json",
           },
@@ -95,19 +96,7 @@ const Admin = () => {
       }
     };
     getData();
-  }, []);
-
-
-
-  
-
-
-
-
-
-
-
-
+  }, [id]);
 
   return (
     <div className="h-[100vh]">
@@ -146,7 +135,7 @@ const Admin = () => {
             <h4 className="text-white bg-green-800 p-4 w-32">Messages</h4>
         </div>
         
-        <div onClick={()=>navigator(`/admin/course/${data}`)} className=" absolute right-52 top-[6.5rem] text-center cursor-pointer">
+        <div onClick={()=>navigator(`/admin/course/${id}`)} className=" absolute right-52 top-[6.5rem] text-center cursor-pointer">
             <h4 className="text-white bg-blue-800 p-4 w-44">Course Requests</h4>
         </div>
 

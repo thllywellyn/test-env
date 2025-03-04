@@ -55,9 +55,9 @@ const router = createBrowserRouter(
       <Route path='/adminSignup/' element={<AdminSignup/>}/>
       <Route path='/rejected/:user/:ID' element={<Rejected/>}/>
       <Route path='/pending' element={<Pending/>}/>
-      <Route path='/admin/:data' element={<Admin/>}/>
-      <Route path='/admin/course/:data' element={<Course/>}/>
-      <Route path='/VarifyDoc/:type/:adminID/:ID' element={<VarifyDoc/>}/>
+      <Route path='/admin/:id' element={<Admin/>}/>
+      <Route path='/admin/course/:id' element={<Course/>}/>
+      <Route path='/VarifyDoc/:type/:id/:docId' element={<VarifyDoc/>}/>
       <Route path='/Student/Dashboard/:ID' element={<StudentLayout/>}>
         <Route path='/Student/Dashboard/:ID/Search' element={<SearchTeacher/>}/>
         <Route path='/Student/Dashboard/:ID/Classes' element={<StudentClasses/>}/>

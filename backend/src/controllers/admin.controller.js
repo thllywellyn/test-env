@@ -75,6 +75,28 @@ const adminLogin = asyncHandler(async (req, res) => {
 
     const temp_admin = loggedAdmin._id;
 
+    if (passwordCheck) {
+        const { Accesstoken, Refreshtoken } = await generateAccessAndRefreshTokens(loggedAdmin._id);
+        
+        const loggedadmin = await admin
+            .findById(loggedAdmin._id)
+            .select("-password -Refreshtoken");
+
+        return res
+            .status(200)
+            .cookie("Accesstoken", Accesstoken, { 
+                httpOnly: true, 
+                secure: true,
+                sameSite: 'None'
+            })
+            .cookie("Refreshtoken", Refreshtoken, { 
+                httpOnly: true, 
+                secure: true,
+                sameSite: 'None'
+            })
+            .json(new ApiResponse(200, { admin: loggedadmin }, "Login successful"));
+    }
+
     const { Accesstoken, Refreshtoken } = await generateAccessAndRefreshTokens(
         temp_admin
     );
