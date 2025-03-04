@@ -147,57 +147,59 @@ const mailVerified = asyncHandler(async(req,res)=>{
 
 
 const login = asyncHandler(async(req,res) => {
+    try {
+        const {Email, Password} = req.body;  // Changed to directly get from body
 
-    const Email = req.user.Email
-    const Password = req.user.Password
+        if(!Email || !Password || [Email, Password].some((field) => field?.trim() === "")) {
+            throw new ApiError(400, "Email and password are required");
+        }
 
+        const StdLogin = await student.findOne({ Email })
 
-    if([Email, Password].some((field) => field?.trim() === "")) {
-        throw new ApiError(400, "All fields are required");
-    }
+        if(!StdLogin){
+            throw new ApiError(404, "Student does not exist")
+        }
 
-    const StdLogin = await student.findOne({
-        Email
-    })
+        if(!StdLogin.Isverified){
+            throw new ApiError(401, "Email is not verified");
+        }
 
-    if(!StdLogin){
-        throw new ApiError(400, "Student does not exist")
-    }
+        const StdPassCheck = await StdLogin.isPasswordCorrect(Password)
 
-    if(!StdLogin.Isverified){
-        throw new ApiError(401, "Email is not verified");
-    }
+        if(!StdPassCheck){
+            throw new ApiError(403, "Invalid credentials")
+        }
 
-    const StdPassCheck = await StdLogin.isPasswordCorrect(Password)
+        const {Accesstoken, Refreshtoken} = await generateAccessAndRefreshTokens(StdLogin._id)
 
-    if(!StdPassCheck){
-        throw new ApiError(403,"Password is incorrect",)
-    }
+        const loggedInStd = await student.findById(StdLogin._id).select("-Password -Refreshtoken")
 
-    const tempStd = StdLogin._id
+        const options = {
+            httpOnly: true,
+            secure: true,
+            sameSite: 'none',
+            domain: process.env.NODE_ENV === "development" ? "localhost" : ".onrender.com",
+            expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+        }
 
-    
-    const {Accesstoken, Refreshtoken} =  await generateAccessAndRefreshTokens(tempStd)
-
-    const loggedInStd = await student.findById(tempStd).select("-Password -Refreshtoken")
-
-    const options = {
-        httpOnly:true,
-        secure:true,
-    }
-
-    return res
-    .status(200)
-    .cookie("Accesstoken", Accesstoken, options)
-    .cookie("Refreshtoken", Refreshtoken, options)
-    .json(
-        new ApiResponse(
-            200,{
-            user:loggedInStd
-            }, "logged in"
+        return res
+        .status(200)
+        .cookie("Accesstoken", Accesstoken, options)
+        .cookie("Refreshtoken", Refreshtoken, options)
+        .json(
+            new ApiResponse(
+                200,
+                {
+                    user: loggedInStd,
+                    Accesstoken,
+                    Refreshtoken
+                },
+                "Logged in successfully"
             )
-    )
-
+        )
+    } catch (error) {
+        throw new ApiError(500, error?.message || "Internal server error during login")
+    }
 })
 
 const logout = asyncHandler(async(req,res)=>{

@@ -6,12 +6,18 @@ import Razorpay from "razorpay"
 const app = express();
 
 const corsOptions = {
-    origin: ["*","https://test-env-kappa.vercel.app", "https://*.lsanalab.xyz"], // specify allowed origins
-    methods: ["GET", "POST", "PUT", "DELETE"], // specify allowed methods
-    credentials: true // allow cookies to be sent
+    origin: process.env.NODE_ENV === "development" 
+        ? ["http://localhost:3000", "http://localhost:5173"]
+        : ["https://test-env-kappa.vercel.app"],
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    credentials: true,
+    allowedHeaders: ["Content-Type", "Authorization", "Origin", "Accept"],
+    exposedHeaders: ["Set-Cookie"],
+    optionsSuccessStatus: 200
 };
 
 app.use(cors(corsOptions))
+app.set('trust proxy', 1); // trust first proxy for secure cookies
 
 app.use(express.json({limit: "16kb"}))
 app.use(express.urlencoded({extended: true, limit: "16kb"}))
