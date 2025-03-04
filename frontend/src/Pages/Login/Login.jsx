@@ -19,58 +19,33 @@ export default function Login() {
   // Function to handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Client-side validation
-    const newErrors = {};
-
-    if (!Email.trim()) {
-      newErrors.email = "Email is required";
-    } else if (!/\S+@\S+\.\S+/.test(Email)) {
-      newErrors.email = "Invalid email format";
-    }
-
-    if (!Password.trim()) {
-      newErrors.password = "Password is required";
-    }
-
-    if (Object.keys(newErrors).length > 0) {
-      // Update the errors state and prevent form submission
-      setErrors(newErrors);
-      return;
-    }
-
-    // Prepare data object to send to the backend
-    const data = {
-      Email: Email,
-      Password: Password,
-    };
-
     try {
-      // Send data to backend (you need to implement this part)
       const response = await fetch(`https://test-env-0xqt.onrender.com/api/${userType}/login`, {
         method: 'POST',
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
+          "Accept": "application/json"
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          Email: Email,
+          Password: Password
+        }),
       });
 
-      const responesData = await response.json()
-      if(responesData.message != 'Logged in'){
-        setErr(responesData.message);
-      }
-      const userid = responesData.data.user._id
- 
-      // Handle response
+      const responseData = await response.json();
+      
       if (response.ok) {
-        // Authentication successful, you can redirect or do something else
-        console.log("Login successful");
-        console.log(responesData.data.user.Isapproved);
-        
-        
-        if(responesData.data.user.Isapproved === "pending"){
-          if(responesData.data.user.Teacherdetails || responesData.data.user.Studentdetails){
+        // Store tokens in localStorage
+        if (responseData.data.accessToken) {
+          localStorage.setItem('accessToken', responseData.data.accessToken);
+          localStorage.setItem('user', JSON.stringify(responseData.data.user));
+        }
+
+        const userid = responseData.data.user._id;
+        // Rest of your navigation logic
+        if(responseData.data.user.Isapproved === "pending"){
+          if(responseData.data.user.Teacherdetails || responseData.data.user.Studentdetails){
             navigate('/pending')
           }else{
             if(userType === 'student'){
@@ -79,13 +54,13 @@ export default function Login() {
               navigate(`/TeacherDocument/${userid}`)
             }
           }
-        }else if(responesData.data.user.Isapproved === "approved"){
+        }else if(responseData.data.user.Isapproved === "approved"){
           if(userType === 'student'){
             navigate(`/Student/Dashboard/${userid}/Search`)
           }else if(userType === 'teacher'){
             navigate(`/Teacher/Dashboard/${userid}/Home`)
           }
-        }else if(responesData.data.user.Isapproved === "reupload"){
+        }else if(responseData.data.user.Isapproved === "reupload"){
           if(userType === 'teacher'){
             navigate(`/rejected/${userType}/${userid}`)
           }else{
@@ -95,26 +70,12 @@ export default function Login() {
           setErr('You are ban from our platform!');
         }
 
-      } else if (response.status === 401) {
-        // Incorrect password
-        setErrors({ password: responesData.message || "Incorrect password" });
-      } else if (response.status === 403) {
-        // Account locked, disabled, or other authentication issues
-
-        setErrors({ general: responesData.message || "Login failed" });
-      } else if (response.status === 400) {
-        setErrors({ general: responesData.message || "User does not exist" });
-      } else if (response.status === 422) {
-        setErrors({
-          general: responesData.message || '"Email" must be a valid email',
-        });
       } else {
-        // Other unexpected errors
-        setErrors({ general: "An unexpected error occurred" });
+        setErr(responseData.message || 'Login failed');
       }
     } catch (error) {
-   
-      setErrors(error.message);
+      console.error('Login error:', error);
+      setErr('Network error or server not responding');
     }
   };
 

@@ -10,17 +10,26 @@ function StudentDashboard() {
   const [data, setdata] = useState([]);
   const [error, setError] = useState(null);
 
-  const Handlelogout = async() =>{
-    const response = await fetch(`https://test-env-0xqt.onrender.com/api/student/logout`, {
-      method: 'POST',
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
+  const Handlelogout = async() => {
+    try {
+      const response = await fetch(`https://test-env-0xqt.onrender.com/api/student/logout`, {
+        method: 'POST',
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem('accessToken')}`
+        }
+      });
+
+      const data = await response.json();
+      if(response.ok) {
+        // Clear local storage
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('user');
+        navigator('/');
       }
-    });
-    const data = await response.json();
-    if(data.statusCode == 200){
-      navigator('/');
+    } catch (error) {
+      console.error('Logout error:', error);
     }
   }
 
@@ -99,4 +108,4 @@ function StudentDashboard() {
   )
 }
 
-export default StudentDashboard 
+export default StudentDashboard

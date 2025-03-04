@@ -15,8 +15,10 @@ function StudentCourses() {
         try {
           const response = await fetch(`https://test-env-0xqt.onrender.com/api/course/student/${ID}/enrolled`, {
             method: 'GET',
+            credentials: 'include',
             headers: {
               'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
             },
           });
   
@@ -26,14 +28,13 @@ function StudentCourses() {
   
           const user = await response.json();
           setdata(user.data);
-          console.log(user.data);
-
         } catch (error) {
-          setError(error.message)
+          console.error('Fetch error:', error);
+          setError(error.message);
         }
       };
       getData();
-  },[]);
+  }, [ID]);
 
   const openpopup = async(sub)=>{ 
     setsubDetails(sub);
