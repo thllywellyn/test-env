@@ -43,6 +43,14 @@ router.route('/forgetpassword').post(forgetPassword)
 
 router.route('/forgetpassword/:token').post(resetPassword)
 
-
+router.route("/verification/:id")
+    .post(
+        upload.fields([
+            { name: "Aadhaar", maxCount: 1 },
+            { name: "Secondary", maxCount: 1 },
+            { name: "Higher", maxCount: 1 }
+        ]),
+        addStudentDetails
+    );
 
 export default router;
