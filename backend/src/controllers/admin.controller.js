@@ -451,20 +451,12 @@ const sendmessage = asyncHandler(async (req, res) => {
 
 const allmessages = asyncHandler(async (req, res) => {
     const messages = await contact
-        .find({
-            status: false,
-        })
+        .find()
         .sort({ _id: -1 });
-
-    if (!messages) {
-        return res
-            .status(200)
-            .json(new ApiResponse(200, {}, "no new messages"));
-    }
 
     return res
         .status(200)
-        .json(new ApiResponse(200, messages, "messages fetched"));
+        .json(new ApiResponse(200, messages || [], "messages fetched"));
 });
 
 const readMessage = asyncHandler(async (req, res) => {

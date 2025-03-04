@@ -18,25 +18,66 @@ const Admin = () => {
   const [open, setOpen] = useState(false);
 
 
-  useEffect(()=>{
-    const getAllMsg = async () => {
+  useEffect(() => {
+    const getData = async () => {
       try {
-        const response = await fetch(`https://test-env-0xqt.onrender.com/api/admin/messages/all`, {
-          method: "GET",
+        // Get adminId from localStorage if not available in params
+        const effectiveAdminId = id || localStorage.getItem('adminId');
+        
+        if (!effectiveAdminId) {
+          throw new Error("Admin ID not found");
+        }
+
+        const response = await fetch(`https://test-env-0xqt.onrender.com/api/admin/${effectiveAdminId}/approve`, {
+          method: "POST",
+          credentials: 'include',
           headers: {
             "Content-Type": "application/json",
           },
         });
 
-        const data = await response.json();
-        setAllMsg(data.data)
-
+        if (!response.ok) {
+          throw new Error("Failed to fetch data");
+        }
+        
+        const result = await response.json();
+        setStudentData(result.data.studentsforApproval);
+        setTeacherData(result.data.teachersforApproval);
+        setAdminID(result.data.admin._id);
       } catch (err) {
-        console.log(err.message);
+        console.error("Error fetching data:", err.message);
+        // Optionally redirect to login if admin ID is not found
+        if (err.message === "Admin ID not found") {
+          navigator('/adminLogin');
+        }
+      }
+    };
+    getData();
+  }, [id, navigator]);
+
+  useEffect(() => {
+    const getAllMsg = async () => {
+      try {
+        const response = await fetch(`https://test-env-0xqt.onrender.com/api/admin/messages/all`, {
+          method: "GET",
+          credentials: 'include',
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch messages");
+        }
+
+        const data = await response.json();
+        setAllMsg(data.data || []);
+      } catch (err) {
+        console.error("Error fetching messages:", err.message);
       }
     };
     getAllMsg();
-  },[])
+  }, [])
 
   const Approval = async(ID, type, approve)=>{
     try {
@@ -69,34 +110,6 @@ const Admin = () => {
   const docDetails = async (type, docId) =>{
     navigator(`/VarifyDoc/${type}/${id}/${docId}`);
   }
-
-
-  useEffect(() => {
-    const getData = async () => {
-      try {
-        const response = await fetch(`https://test-env-0xqt.onrender.com/api/admin/${id}/approve`, {
-          method: "POST",
-          credentials: 'include',
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch data");
-        } else {
-          const result = await response.json();
-         
-          setStudentData(result.data.studentsforApproval);
-          setTeacherData(result.data.teachersforApproval);
-          setAdminID(result.data.admin._id);
-        }
-      } catch (err) {
-        console.log(err.message);
-      }
-    };
-    getData();
-  }, [id]);
 
   return (
     <div className="h-[100vh]">
