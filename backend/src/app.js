@@ -6,17 +6,29 @@ import Razorpay from "razorpay"
 const app = express();
 
 const corsOptions = {
-    origin: process.env.NODE_ENV === "development" 
-        ? ["http://localhost:3000", "http://localhost:5173"]
-        : ["https://test-env-kappa.vercel.app"],
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    origin: ['https://test-env-kappa.vercel.app', 'http://localhost:3000', 'http://localhost:5173'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     credentials: true,
-    allowedHeaders: ["Content-Type", "Authorization", "Origin", "Accept"],
-    exposedHeaders: ["Set-Cookie"],
-    optionsSuccessStatus: 200
+    allowedHeaders: ['Content-Type', 'Authorization', 'Origin', 'Accept', 'X-Requested-With'],
+    exposedHeaders: ['Set-Cookie'],
+    optionsSuccessStatus: 200,
+    preflightContinue: true,
+    maxAge: 86400 // 24 hours
 };
 
-app.use(cors(corsOptions))
+// Enable pre-flight requests for all routes
+app.options('*', cors(corsOptions));
+app.use(cors(corsOptions));
+
+// Set additional headers for better CORS handling
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', req.headers.origin);
+    res.header('Access-Control-Allow-Credentials', true);
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Origin, Accept');
+    next();
+});
+
 app.set('trust proxy', 1); // trust first proxy for secure cookies
 
 app.use(express.json({limit: "16kb"}))
