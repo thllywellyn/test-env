@@ -249,14 +249,20 @@ const getStudent = asyncHandler(async(req,res)=>{
 const addStudentDetails = asyncHandler(async(req, res) => {
     try {
         const id = req.params.id;
-        if(req.Student._id != id){
+        
+        // Validate user authorization
+        if(!req.Student || req.Student._id != id) {
             return res.status(401).json({
                 success: false,
                 message: "Unauthorized access"
             });
         }
 
-        // Validate input
+        // Log incoming request
+        console.log("Received form data:", req.body);
+        console.log("Received files:", req.files);
+
+        // Validate required fields
         const {Phone, Address, Highesteducation, SecondarySchool, HigherSchool, SecondaryMarks, HigherMarks} = req.body;
         
         if (!Phone || !Address || !Highesteducation || !SecondarySchool || !HigherSchool || !SecondaryMarks || !HigherMarks) {
@@ -266,36 +272,27 @@ const addStudentDetails = asyncHandler(async(req, res) => {
             });
         }
 
-        // Process file uploads and create student details
-        const alreadyExist = await studentdocs.findOne({Phone})
-
-        if(alreadyExist){
-            throw new ApiError(400, "phone number already exists")
+        // Validate file uploads
+        if (!req.files?.Aadhaar?.[0] || !req.files?.Secondary?.[0] || !req.files?.Higher?.[0]) {
+            return res.status(400).json({
+                success: false,
+                message: "All documents are required"
+            });
         }
 
-        const AadhaarLocalPath = req.files?.Aadhaar?.[0]?.path;
+        // Process files and create document
+        const Aadhaar = await uploadOnCloudinary(req.files.Aadhaar[0].path);
+        const Secondary = await uploadOnCloudinary(req.files.Secondary[0].path);
+        const Higher = await uploadOnCloudinary(req.files.Higher[0].path);
 
-        const SecondaryLocalPath = req.files?.Secondary?.[0]?.path;
-
-        const HigherLocalPath = req.files?.Higher?.[0]?.path
-
-        if(!AadhaarLocalPath){
-            throw new ApiError(400, "Aadhaar is required")
+        if (!Aadhaar?.url || !Secondary?.url || !Higher?.url) {
+            return res.status(400).json({
+                success: false,
+                message: "Error uploading documents"
+            });
         }
 
-        if(!SecondaryLocalPath){
-            throw new ApiError(400, "Secondary marksheet is required")
-        }
-
-        if(!HigherLocalPath){
-            throw new ApiError(400, "Higher marksheet is required")
-        }
-
-        const Aadhaar = await uploadOnCloudinary(AadhaarLocalPath)
-        const Secondary = await uploadOnCloudinary(SecondaryLocalPath)
-
-        const Higher = await uploadOnCloudinary(HigherLocalPath)
-
+        // Create student documents
         const studentdetails = await studentdocs.create({
             Phone,
             Address,
@@ -307,23 +304,34 @@ const addStudentDetails = asyncHandler(async(req, res) => {
             Aadhaar: Aadhaar.url,
             Secondary: Secondary.url,
             Higher: Higher.url,
-        })
+        });
 
+        // Update student record
+        const theStudent = await student.findOneAndUpdate(
+            {_id: id},
+            {
+                $set: {
+                    Isapproved: "pending",
+                    Studentdetails: studentdetails._id
+                }
+            },
+            { new: true }
+        ).select("-Password -Refreshtoken");
 
-        //const loggedstd = await student.findByIdAndUpdate(id, {})
-
-        const theStudent = await student.findOneAndUpdate({_id: id}, {$set: {Isapproved:"pending", Studentdetails: studentdetails._id}},  { new: true }).select("-Password -Refreshtoken")
-        
-        
-        if(!theStudent){
-            throw new ApiError(400,"faild to approve or reject || student not found")
+        if (!theStudent) {
+            return res.status(404).json({
+                success: false,
+                message: "Student not found"
+            });
         }
 
+        // Send success response
         return res.status(200).json({
             success: true,
             data: theStudent,
             message: "Documents uploaded successfully"
         });
+
     } catch (error) {
         console.error("Add student details error:", error);
         return res.status(500).json({

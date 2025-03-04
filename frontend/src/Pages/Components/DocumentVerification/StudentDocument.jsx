@@ -108,8 +108,10 @@ const StudentDocument = () => {
       }
 
       const formDataObj = new FormData();
+      
+      // Append all form fields
       Object.keys(formData).forEach((key) => {
-        if (formData[key] !== null && formData[key] !== undefined) {
+        if (formData[key] !== null && formData[key] !== undefined && formData[key] !== "") {
           formDataObj.append(key, formData[key]);
         }
       });
@@ -118,17 +120,24 @@ const StudentDocument = () => {
         method: "POST",
         credentials: 'include',
         headers: {
-          "Authorization": `Bearer ${token}`,
+          "Authorization": `Bearer ${token}`
+          // Remove Content-Type header - browser will set it automatically with boundary for FormData
         },
-        body: formDataObj,
+        body: formDataObj
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to submit form");
+      // First check if the response is JSON
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        throw new Error("Server didn't return JSON");
       }
 
       const responseData = await response.json();
+
+      if (!response.ok) {
+        throw new Error(responseData.message || "Failed to submit form");
+      }
+
       console.log("Form submitted successfully!", responseData);
       navigate("/pending");
     } catch (error) {
